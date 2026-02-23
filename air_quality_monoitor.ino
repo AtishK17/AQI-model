@@ -1,0 +1,74 @@
+#include <ESP8266WiFi.h>
+#include <ThingSpeak.h>
+#include <DHT.h>
+#include <ESP8266HTTPClient.h>
+
+#define DHTPIN D2  
+#define DHTTYPE DHT11  
+DHT dht(DHTPIN, DHTTYPE);
+
+const char* ssid = "YOUR_WIFI_NAME";
+const char* password = "YOUR_WIFI_PASSWORD";
+
+WiFiClient client;
+
+unsigned long myChannelNumber = your_channelNumber;
+const char * myWriteAPIKey = "YOUR_API_KEY";
+
+#define MQ135_PIN A0  
+#define MQ2_PIN D1  
+
+#define MQ135_CO2_FACTOR  0.2   
+#define MQ135_NH3_FACTOR  0.3   
+#define MQ2_LPG_FACTOR    0.15  
+#define MQ2_CH4_FACTOR    0.18  
+
+// #define LPG_THRESHOLD  1000  // PPM
+// #define CH4_THRESHOLD  1200  // PPM
+
+void setup() {
+  Serial.begin(115200);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("WiFi Connected");
+
+  ThingSpeak.begin(client);
+  dht.begin();
+}
+
+float getPPM(int raw_value, float factor) {
+    return raw_value * factor;
+}
+
+void loop() {
+  int mq135_value = analogRead(MQ135_PIN);
+  int mq2_value = analogRead(MQ2_PIN);
+  float temp = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  float co2_ppm = getPPM(mq135_value, MQ135_CO2_FACTOR);
+  float nh3_ppm = getPPM(mq135_value, MQ135_NH3_FACTOR);
+  float lpg_ppm = getPPM(mq2_value, MQ2_LPG_FACTOR);
+  float ch4_ppm = getPPM(mq2_value, MQ2_CH4_FACTOR);
+
+  Serial.print("CO2 (PPM): "); Serial.println(co2_ppm);
+  Serial.print("NH3 (PPM): "); Serial.println(nh3_ppm);
+  Serial.print("LPG (PPM): "); Serial.println(lpg_ppm);
+  Serial.print("CH4 (PPM): "); Serial.println(ch4_ppm);
+  Serial.print("Temperature: "); Serial.println(temp);
+  Serial.print("Humidity: "); Serial.println(humidity);
+
+  ThingSpeak.setField(1, co2_ppm);
+  ThingSpeak.setField(2, nh3_ppm);
+  ThingSpeak.setField(3, lpg_ppm);
+  ThingSpeak.setField(4, ch4_ppm);
+  ThingSpeak.setField(5, temp);
+  ThingSpeak.setField(6, humidity);
+  ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+
+  delay(15000);
+}
