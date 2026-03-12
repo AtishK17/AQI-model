@@ -67,6 +67,4 @@ An IoT-based real-time air quality monitoring system using **ESP8266 (NodeMCU)**
 
 ## 📌 Author
 
-**Atish Kundu**  
-B.Tech | KIIT University  
-Interested in IoT, Embedded Systems & Product Development
+**Atish Kundu**
