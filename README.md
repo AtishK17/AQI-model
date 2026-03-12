@@ -59,12 +59,6 @@ An IoT-based real-time air quality monitoring system using **ESP8266 (NodeMCU)**
 
 ---
 
-## 📸 Project Images
-
-(Add hardware setup and ThingSpeak dashboard screenshots here)
-
----
-
 ## 📌 Author
 
 **Atish Kundu**
